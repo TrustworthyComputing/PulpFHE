@@ -10,7 +10,7 @@
     * The serial normal adder function itself is modified to be parallelizable.
     * The `listen_for_inst` funciton is refactored to fit in the cpp file.
 
-# Adding Div
+# Adding div and mod
 
 * `juliet_interpreter.py`:
     
@@ -19,4 +19,6 @@
 * `encalu_p.cpp`:
 
     * The `div` instruction has been integrated and assigned ID 111
+    * The `mod` instruction has been integrated and assigned ID 112
+
     

@@ -1615,8 +1615,12 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       multiplier(result, ciphertext1, ciphertext2, wordSize, bk);
     }
     else if (operation == 111)
-    {
+    { // divide
       div(result, ciphertext1, ciphertext2, wordSize, bk);
+    }
+    else if (operation == 112){
+      // mod
+      mod(result, ciphertext1, ciphertext2, wordSize, bk);
     }
   }
 
