@@ -1562,7 +1562,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
   FILE *ctxt_two_data;
   FILE *ctxt_three_data;
 
-  if (operation < 9)
+  if (operation < 9 || operation > 100)
   { // 2 input ciphertexts
     token = strtok(NULL, " ");
     ctxt_one_data = fopen(token, "rb");
@@ -1613,6 +1613,10 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
     else if (operation == 8)
     { // multiply
       multiplier(result, ciphertext1, ciphertext2, wordSize, bk);
+    }
+    else if (operation == 111)
+    {
+      div(result, ciphertext1, ciphertext2, wordSize, bk);
     }
   }
 

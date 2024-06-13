@@ -568,6 +568,36 @@ def pulpme(fileName, W=8, K=16):
             intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
+        
+        elif (func == 'ediv'):
+            storeReg = P[pc + 1]
+            reg = P[pc + 2]
+            secondReg = P[pc + 3]
+            ri = regList[regSelect(reg, K)]
+            rj = regList[regSelect(secondReg, K)]
+            ctxtOne = bits_to_num(ri, W)
+            ctxtTwo = bits_to_num(rj, W)
+
+            with open("ctxtMem.txt") as f:
+                content = f.readlines()
+            content = [x.strip() for x in content]
+            f.close()
+
+            if ctxtOne < 1:
+                ctxtOneFile = content[0]
+            else:
+                ctxtOneFile = content[ctxtOne - 1]
+
+            if ctxtTwo < 1:
+                ctxtTwoFile = content[0]
+            else:
+                ctxtTwoFile = content[ctxtTwo - 1]
+
+            send_str(sock, str(W) + ' 111 ' + ctxtOneFile + " " + ctxtTwoFile)
+            pc = pc + 4
+            intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
+            answer = num_to_bits(intAnswer, W, func)
+            regList[regSelect(storeReg, K)] = answer
 
         # FIXME: This is exclusively for debugging
         elif (func == 'decrypt'):
@@ -902,7 +932,7 @@ def pulpme(fileName, W=8, K=16):
             else:
                 ctxtOneFile = content[ctxtOne - 1]
             subprocess.call("cp " + ctxtOneFile + " output.data", shell=True)
-        #send_str(sock, "exit")
+            send_str(sock, "exit")
 
             return
 
@@ -1031,5 +1061,5 @@ def pulpme(fileName, W=8, K=16):
                 break
 
 start = time.time()
-pulpme("Benchmarks/add.asm")
+pulpme("Benchmarks/add.asm", W=16, K=128)
 print("Time elapsed: ", time.time() - start)

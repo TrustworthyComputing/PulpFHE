@@ -10,4 +10,13 @@
     * The serial normal adder function itself is modified to be parallelizable.
     * The `listen_for_inst` funciton is refactored to fit in the cpp file.
 
+# Adding Div
+
+* `juliet_interpreter.py`:
+    
+    * Enabled sending `exit` command to exit the server to avoid socket binding failuer.
+
+* `encalu_p.cpp`:
+
+    * The `div` instruction has been integrated and assigned ID 111
     

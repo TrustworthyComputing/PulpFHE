@@ -3,13 +3,6 @@ client_scripts_cpu: client/keygen.c client/preprocessor.c client/decrypt.c clien
 	gcc -o client/preprocessor client/preprocessor.c client/filenames.c -ltfhe-spqlios-fma
 	gcc -o client/decrypt client/decrypt.c -ltfhe-spqlios-fma
 
-client_scripts_gpu: client/keygen.cu client/preprocessor.cu client/decrypt.cu
-	nvcc -o client/keygen.out client/keygen.cu -lcufhe_gpu  -Xcompiler -Wall
-	nvcc -o client/preprocessor client/preprocessor.cu -lcufhe_gpu  -Xcompiler -Wall
-	nvcc -o client/decrypt.out client/decrypt.cu -lcufhe_gpu  -Xcompiler -Wall
-	
 encalu_cpu: cloud_enc/encalu_p.cpp cloud_enc/filenames_p.cpp
 	g++ -o cloud_enc/encalu_cpu_p cloud_enc/encalu_p.cpp cloud_enc/filenames_p.cpp -ltfhe-spqlios-fma -fopenmp
 
-encalu_gpu: cloud_enc/encalu_gpu.cu
-	nvcc -c -o cloud_enc/encalu_gpu.o cloud_enc/encalu_gpu.cu -lcufhe_gpu  -Xcompiler -Wall 
