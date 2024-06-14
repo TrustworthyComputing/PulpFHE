@@ -47,7 +47,6 @@ def bits_to_num(bitArray, W):
             num = num + int(bitArray[bits]) * (2**bits)
         return num
 
-
 def num_to_bits(num, W, func):
     if (func == 'umulh' or func == 'smulh'):
         bitArray = [num >> i & 1 for i in range(W*2)]
@@ -92,6 +91,8 @@ def pulpme(fileName, W=8, K=16):
     auxTapeIndex = 0
     memory = [0] * 2**16
 
+    # This is used to save the values (plaintext only) of the registers set by the econst instruction
+    reg_ptxt = dict()
 
     global regList
     for i in range(K*3+1):
@@ -148,6 +149,8 @@ def pulpme(fileName, W=8, K=16):
                 ptxt_val = int(P[pc + 2])
             else:
                 ptxt_val = bits_to_num(regList[regSelect(P[pc + 2], K)], W)
+            
+            reg_ptxt[storeReg[:len(storeReg)-1]] = ptxt_val
 
             #subprocess.call("./e_alu " + str(W) + ' 14 ' + str(ptxt_val), shell=True)
             send_str(sock, str(W) + ' 14 ' + str(ptxt_val))
@@ -174,7 +177,7 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
 
-        elif (func == 'esll'):
+        elif (func == 'esll'): # SHIFTING OPERATIONS HAVE ERRORS; THE SHIFT_AMOUNT IS INCORRECT.
             storeReg = P[pc + 1]
             ctxtOne = bits_to_num(regList[regSelect(P[pc + 2], K)], W)
             shift_val = 0
@@ -197,7 +200,7 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
 
-        elif (func == 'eslr'):
+        elif (func == 'eslr'): # SHIFTING OPERATIONS HAVE ERRORS; THE SHIFT_AMOUNT IS INCORRECT.
             storeReg = P[pc + 1]
             ctxtOne = bits_to_num(regList[regSelect(P[pc + 2], K)], W)
             shift_val = 0
@@ -569,6 +572,51 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
         
+        elif (func == "eror"):
+            storeReg = P[pc + 1]
+            ctxtOne = bits_to_num(regList[regSelect(P[pc + 2], K)], W)
+            shift_val = 0
+            if (str(P[pc + 3]).isnumeric() == True): # shift value
+                shift_val = int(P[pc + 3])
+            else:
+                shift_val = reg_ptxt[P[pc + 3]]
+
+            with open("ctxtMem.txt") as f:
+                content = f.readlines()
+            content = [x.strip() for x in content]
+            f.close()
+
+            ctxtOneFile = content[ctxtOne - 1]
+
+            #subprocess.call("./e_alu " + str(W) + ' 10 ' + ctxtOneFile + ' ' + str(shift_val), shell=True)
+            send_str(sock, str(W) + ' 105 ' + ctxtOneFile + ' ' + str(shift_val))
+            pc = pc + 4
+            intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
+            answer = num_to_bits(intAnswer, W, func)
+            regList[regSelect(storeReg, K)] = answer
+
+        elif (func == "erol"):
+            storeReg = P[pc + 1]
+            ctxtOne = bits_to_num(regList[regSelect(P[pc + 2], K)], W)
+            shift_val = 0
+            if (str(P[pc + 3]).isnumeric() == True): # shift value
+                shift_val = int(P[pc + 3])
+            else:
+                shift_val = reg_ptxt[P[pc + 3]]
+            
+            with open("ctxtMem.txt") as f:
+                content = f.readlines()
+            content = [x.strip() for x in content]
+            f.close()
+
+            ctxtOneFile = content[ctxtOne - 1]
+
+            send_str(sock, str(W) + ' 106 ' + ctxtOneFile + ' ' + str(shift_val))
+            pc = pc + 4
+            intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
+            answer = num_to_bits(intAnswer, W, func)
+            regList[regSelect(storeReg, K)] = answer
+
         elif (func == 'ediv'):
             storeReg = P[pc + 1]
             reg = P[pc + 2]
@@ -629,6 +677,7 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
 
+        
         # FIXME: This is exclusively for debugging
         elif (func == 'decrypt'):
             storeReg = P[pc + 1]
@@ -1091,5 +1140,5 @@ def pulpme(fileName, W=8, K=16):
                 break
 
 start = time.time()
-pulpme("Benchmarks/enc_mod.asm", W=16, K=128)
+pulpme("Benchmarks/enc_rotr.asm", W=8, K=128)
 print("Time elapsed: ", time.time() - start)

@@ -906,7 +906,7 @@ void p_adder(LweSample *result, const LweSample *a, const LweSample *b, const in
   }
 }
 
-// 104
+// Helper function
 void e_shl_p(LweSample *result, const LweSample *a, const LweSample *LSB, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
   LweSample *temp = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
@@ -1562,7 +1562,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
   FILE *ctxt_two_data;
   FILE *ctxt_three_data;
 
-  if (operation < 9 || operation > 100)
+  if (operation < 9)
   { // 2 input ciphertexts
     token = strtok(NULL, " ");
     ctxt_one_data = fopen(token, "rb");
@@ -1614,17 +1614,14 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
     { // multiply
       multiplier(result, ciphertext1, ciphertext2, wordSize, bk);
     }
-    else if (operation == 111)
-    { // divide
-      div(result, ciphertext1, ciphertext2, wordSize, bk);
-    }
-    else if (operation == 112){
-      // mod
-      mod(result, ciphertext1, ciphertext2, wordSize, bk);
+    else
+    {
+      cout << "Unknown Assembly Instruction ... Code " << operation << endl;
+      exit(1);
     }
   }
 
-  else if (operation < 12)
+  else if (operation < 12) 
   { // 1 input ciphertext
     token = strtok(NULL, " ");
     ctxt_one_data = fopen(token, "rb");
@@ -1651,6 +1648,11 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       token = strtok(NULL, " ");
       int shift_amount = atoi(token);
       e_shr(result, ciphertext1, shift_amount, wordSize, bk);
+    }
+    else
+    {
+      cout << "Unknown Assembly Instruction ... Code " << operation << endl;
+      exit(1);
     }
   }
 
@@ -1706,6 +1708,92 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
     {
       bootsCONSTANT(&result[i], (ptxt_val >> i) & 1, bk);
     }
+  }
+
+  else if (operation > 100)
+  {
+    if (operation == 105)
+    {
+      // rotate right
+      // 1 input ciphertext
+      token = strtok(NULL, " ");
+      ctxt_one_data = fopen(token, "rb");
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+      }
+
+      fclose(ctxt_one_data);
+      
+      token = strtok(NULL, " ");
+      int rot_amount = atoi(token);
+      rot_r(result, ciphertext1, rot_amount, wordSize, bk);
+    }
+    
+    else if (operation == 106)
+    {
+      // rotate left
+      // 1 input ciphertext
+      token = strtok(NULL, " ");
+      ctxt_one_data = fopen(token, "rb");
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+      }
+
+      fclose(ctxt_one_data);
+      
+      token = strtok(NULL, " ");
+      int rot_amount = atoi(token);
+      rot_l(result, ciphertext1, rot_amount, wordSize, bk);
+    }
+    
+    else if (operation == 111)
+    { // divide
+      // 2 input ciphertexts
+      token = strtok(NULL, " ");
+      ctxt_one_data = fopen(token, "rb");
+      token = strtok(NULL, " ");
+      ctxt_two_data = fopen(token, "rb");
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_two_data, &ciphertext2[i], params);
+      }
+
+      fclose(ctxt_one_data);
+      fclose(ctxt_two_data);
+      div(result, ciphertext1, ciphertext2, wordSize, bk);
+    }
+    
+    else if (operation == 112)
+    {
+      // mod
+      // 2 input ciphertexts
+      token = strtok(NULL, " ");
+      ctxt_one_data = fopen(token, "rb");
+      token = strtok(NULL, " ");
+      ctxt_two_data = fopen(token, "rb");
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_two_data, &ciphertext2[i], params);
+      }
+
+      fclose(ctxt_one_data);
+      fclose(ctxt_two_data);
+      mod(result, ciphertext1, ciphertext2, wordSize, bk);
+    }
+  }
+
+  else
+  {
+    cout << "Uknown Assembly Instruction ... Code " << operation << endl;
+    exit(1);
   }
 
   char *fileName = (char *)malloc(50);

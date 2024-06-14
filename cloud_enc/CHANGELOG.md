@@ -21,4 +21,15 @@
     * The `div` instruction has been integrated and assigned ID 111
     * The `mod` instruction has been integrated and assigned ID 112
 
+# Adding left and right rotation
+
+* It seems that `juliet_interpreter.py` incorrectly parses the shift amount for the left and right shift instructions.
+
+* `juliet_interpreter.py`:
+    * Added the `eror` and `erol` instructions.
+
+* `encalu_p.cpp`:
+    * The `eror` instruction has been integrated and assigned ID 105.
+    * The `erol` instruction has been integrated and assigned ID 106.
+    
     
