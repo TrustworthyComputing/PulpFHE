@@ -1621,7 +1621,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
     }
   }
 
-  else if (operation < 12) 
+  else if (operation < 12)
   { // 1 input ciphertext
     token = strtok(NULL, " ");
     ctxt_one_data = fopen(token, "rb");
@@ -1725,12 +1725,12 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       }
 
       fclose(ctxt_one_data);
-      
+
       token = strtok(NULL, " ");
       int rot_amount = atoi(token);
       rot_r(result, ciphertext1, rot_amount, wordSize, bk);
     }
-    
+
     else if (operation == 106)
     {
       // rotate left
@@ -1744,12 +1744,12 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       }
 
       fclose(ctxt_one_data);
-      
+
       token = strtok(NULL, " ");
       int rot_amount = atoi(token);
       rot_l(result, ciphertext1, rot_amount, wordSize, bk);
     }
-    
+
     else if (operation == 111)
     { // divide
       // 2 input ciphertexts
@@ -1768,7 +1768,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       fclose(ctxt_two_data);
       div(result, ciphertext1, ciphertext2, wordSize, bk);
     }
-    
+
     else if (operation == 112)
     {
       // mod
@@ -1787,6 +1787,20 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       fclose(ctxt_one_data);
       fclose(ctxt_two_data);
       mod(result, ciphertext1, ciphertext2, wordSize, bk);
+    }
+
+    else if (operation == 114)
+    { // sqrt
+      token = strtok(NULL, " ");
+      ctxt_one_data = fopen(token, "rb");
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+      }
+
+      fclose(ctxt_one_data);
+      e_sqrt(result, ciphertext1, wordSize, bk);
     }
   }
 

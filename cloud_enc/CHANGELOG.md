@@ -32,4 +32,14 @@
     * The `eror` instruction has been integrated and assigned ID 105.
     * The `erol` instruction has been integrated and assigned ID 106.
     
+# Adding sqrt
+
+* `juliet_interpreter.py`:
+    * Added the `esqrt` instructions.
+
+* `encalu_p.cpp`:
+    * The `esqrt` instruction has been integrated and assigned ID 114.
+    
+    
+    
     
