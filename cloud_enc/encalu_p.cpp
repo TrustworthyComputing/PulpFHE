@@ -1896,6 +1896,42 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       
       delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
     }
+
+    else if (operation == 116)
+    {
+      // Mean
+      token = strtok(NULL, " ");
+      vector<string> dat = split(token, ",");
+      int size = stoi(dat[0]);
+      string ctxtLst[size];
+
+      vector<LweSample *> ctxt_lst;
+      for (int i = 0; i < size; i++)
+      {
+        ctxt_one_data = fopen(dat[i+1].c_str(), "rb");
+
+        for (int i = 0; i < wordSize; i++)
+        {
+          import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        }
+        ctxt_lst.push_back(ciphertext1);
+
+        fclose(ctxt_one_data);
+        ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      }
+      
+      LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
+      
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
+      }
+
+      mean(result, ctxt_lst, c_count, size, wordSize, bk);
+      
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
+    }
+
   }
 
   else

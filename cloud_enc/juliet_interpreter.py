@@ -773,6 +773,37 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
 
+        elif (func == "emean"):
+            storeReg = P[pc + 1]
+            reg = P[pc + 2]
+            ri = regList[regSelect(reg, K)]
+            ctxtOne = bits_to_num(ri, W)
+
+            with open("ctxtMem.txt") as f:
+                content = f.readlines()
+            content = [x.strip() for x in content]
+            f.close()
+
+            size = lst_end - lst_start
+            # size,ctxt1,ctxt2,...,END
+            data = str(size)+","
+            ctxtOne -= size
+            for i in range(size):
+                if ctxtOne < 1:
+                    ctxtOneFile = content[0]
+                else:
+                    ctxtOneFile = content[ctxtOne]
+                ctxtOne+=1
+
+                data += str(ctxtOneFile) + ","
+                #send_str(sock, str(ctxtOneFile))
+
+            send_str(sock, str(W) + ' 116 ' + data)
+            pc = pc + 3
+            intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
+            answer = num_to_bits(intAnswer, W, func)
+            regList[regSelect(storeReg, K)] = answer
+
         # FIXME: This is exclusively for debugging
         elif (func == 'decrypt'):
             storeReg = P[pc + 1]
@@ -1235,5 +1266,5 @@ def pulpme(fileName, W=8, K=16):
                 break
 
 start = time.time()
-pulpme("Benchmarks/simpleArr.asm", W=8, K=128)
+pulpme("Benchmarks/enc_mean.asm", W=8, K=128)
 print("Time elapsed: ", time.time() - start)

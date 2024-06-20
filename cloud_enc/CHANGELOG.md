@@ -40,7 +40,7 @@
 * `encalu_p.cpp`:
     * The `esqrt` instruction has been integrated and assigned ID 114.
     
-# Adding var
+# Adding variance
 
 *  `juliet_interpreter.py`:
     * Added the `evar` instruction.
@@ -51,5 +51,10 @@
     * The `evar` instruction has been integrated and assigned ID 115.
     * Added `split` function to split list of ciphertexts received from the intrepreter.
     
-    
-    
+# Adding mean
+
+*  `juliet_interpreter.py`:
+    * Added the `emean` instruction.
+
+*  `encalu_p.cpp`
+    * The `emean` instruction has been integrated and assigned ID 116.
