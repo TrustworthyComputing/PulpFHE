@@ -35,11 +35,21 @@
 # Adding sqrt
 
 * `juliet_interpreter.py`:
-    * Added the `esqrt` instructions.
+    * Added the `esqrt` instruction.
 
 * `encalu_p.cpp`:
     * The `esqrt` instruction has been integrated and assigned ID 114.
     
+# Adding var
+
+*  `juliet_interpreter.py`:
+    * Added the `evar` instruction.
+    * Added the `secread_l` for reading a list of ciphertexts.
+    * Added the `elist` for creating a list of ciphertexts object.
+
+*  `encalu_p.cpp`
+    * The `evar` instruction has been integrated and assigned ID 115.
+    * Added `split` function to split list of ciphertexts received from the intrepreter.
     
     
     

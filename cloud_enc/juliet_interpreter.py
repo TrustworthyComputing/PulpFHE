@@ -107,6 +107,9 @@ def pulpme(fileName, W=8, K=16):
     answer = [0] * W
     flag = 0
 
+    lst_start = 0
+    lst_end = 0
+
     # load program into instruction mem
     initLabels(fileName)
     for line in f:
@@ -694,6 +697,82 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             regList[regSelect(storeReg, K)] = answer
         
+        elif (func == 'elist'):
+            storeReg = P[pc + 1]
+            send_str(sock, str(W) + ' 101 ' + str(storeReg))
+            pc = pc + 2
+        
+        elif (func == 'secread_l'):
+            lst = P[pc+1]
+            size = P[pc+2]
+            if (not str(size).isnumeric()):
+                size = bits_to_num(regList[regSelect(P[pc+2], K)], W)
+
+            #print(lst, size)
+            #send_str(sock, str(W) + ' 102 ' + str(lst) + " " + str(size))
+            pc = pc + 3
+
+            tape = open("tapes/priv.txt", 'r')
+            tapeFiles = tape.readlines()
+            tapeFiles = [x.strip() for x in tapeFiles]
+            lst_start = auxTapeIndex
+            for i in range(int(size)):
+                if auxTapeIndex > (len(tapeFiles) - 1):
+                    print("No more values in private tape!")
+                    return
+                else:
+                    ctxtTapeFile = tapeFiles[auxTapeIndex]
+                tape.close()
+                if ctxtTapeFile == "":
+                    print("Invalid file pointer to ctxt. Exiting")
+                    return
+                ctxtMem = open("ctxtMem.txt", 'a')
+                ctxtMem.write(ctxtTapeFile + '\n')
+                
+                ctxtMem.close()
+                ctxtMem = open("ctxtMem.txt", 'r')
+                intAnswer = 0
+                for line in ctxtMem:
+                    intAnswer = intAnswer + 1
+                answer = num_to_bits(intAnswer, W, func)
+                ctxtMem.close()
+                auxTapeIndex = auxTapeIndex + 1
+
+            storeReg = lst
+            regList[regSelect(storeReg, K)] = answer
+            lst_end = auxTapeIndex
+
+        elif (func == "evar"):
+            storeReg = P[pc + 1]
+            reg = P[pc + 2]
+            ri = regList[regSelect(reg, K)]
+            ctxtOne = bits_to_num(ri, W)
+
+            with open("ctxtMem.txt") as f:
+                content = f.readlines()
+            content = [x.strip() for x in content]
+            f.close()
+
+            size = lst_end - lst_start
+            # size,ctxt1,ctxt2,...,END
+            data = str(size)+","
+            ctxtOne -= size
+            for i in range(size):
+                if ctxtOne < 1:
+                    ctxtOneFile = content[0]
+                else:
+                    ctxtOneFile = content[ctxtOne]
+                ctxtOne+=1
+
+                data += str(ctxtOneFile) + ","
+                #send_str(sock, str(ctxtOneFile))
+
+            send_str(sock, str(W) + ' 115 ' + data)
+            pc = pc + 3
+            intAnswer = int(subprocess.check_output(['grep', '-c', '$', 'ctxtMem.txt']))
+            answer = num_to_bits(intAnswer, W, func)
+            regList[regSelect(storeReg, K)] = answer
+
         # FIXME: This is exclusively for debugging
         elif (func == 'decrypt'):
             storeReg = P[pc + 1]
@@ -711,7 +790,7 @@ def pulpme(fileName, W=8, K=16):
             answer = num_to_bits(intAnswer, W, func)
             pc = pc + 3;
             regList[regSelect(storeReg, K)] = answer
-
+        
         # plaintext functions of the form: ri rj A
         elif (func == 'and' or func == 'or' or func == 'xor' or func == 'add' or func == 'sub' or func == 'mull' or func == 'mult' or func == 'umulh' or func == 'smulh' or func == 'udiv' or func == 'umod' or func == 'shl' or func == 'shr' or func == 'slt'):
             reg = P[pc + 2]
@@ -1047,7 +1126,7 @@ def pulpme(fileName, W=8, K=16):
                 memOffset = bits_to_num(regList[regSelect(mem_addr[0], K)], W)
 
             mem_addr[1].strip(')')
-
+            print(mem_addr)
             mem_num = bits_to_num(regList[regSelect(mem_addr[1].strip(')'), K)], W)
 
             for j in range(W):
@@ -1156,5 +1235,5 @@ def pulpme(fileName, W=8, K=16):
                 break
 
 start = time.time()
-pulpme("Benchmarks/enc_sqrt.asm", W=16, K=128)
+pulpme("Benchmarks/simpleArr.asm", W=8, K=128)
 print("Time elapsed: ", time.time() - start)

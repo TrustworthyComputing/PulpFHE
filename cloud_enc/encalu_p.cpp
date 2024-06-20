@@ -18,14 +18,32 @@
 #include <stdio.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <map>
+#include <sstream>
 using namespace std;
 
 #define MAX 100
 #define PORT 8080
 #define SA struct sockaddr
 
-// Logic Functions
+int tmp_socket;
 
+vector<string> split(string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find(delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+// Logic Functions
 // 0
 void e_and(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
@@ -1470,6 +1488,7 @@ void e_sqrt(LweSample *result, const LweSample *a, const int nb_bits, const TFhe
 // 115
 void variance(LweSample *result, vector<LweSample *> a, LweSample *c_count, int count, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
+  cout << "this is variance ... " << endl;
   LweSample *m = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   // compute the mean
   mean(m, a, c_count, count, nb_bits, bk);
@@ -1561,6 +1580,8 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
   FILE *ctxt_one_data;
   FILE *ctxt_two_data;
   FILE *ctxt_three_data;
+
+  map<string, vector<LweSample *>> lsts;
 
   if (operation < 9)
   { // 2 input ciphertexts
@@ -1712,7 +1733,24 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
 
   else if (operation > 100)
   {
-    if (operation == 105)
+    if (operation == 101)
+    {
+      // elist
+      token = strtok(NULL, " ");
+      vector<LweSample *> v;
+      lsts[token] = v;
+      cout << "RECEIVED: elist " << token << endl;
+    }
+
+    else if (operation == 102)
+    {
+      // secread_l
+      char *lst = strtok(NULL, " ");
+      char *size = strtok(NULL, " ");
+      cout << "RECEIVED: secread_l " << lst << size << endl;
+    }
+
+    else if (operation == 105)
     {
       // rotate right
       // 1 input ciphertext
@@ -1802,6 +1840,62 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       fclose(ctxt_one_data);
       e_sqrt(result, ciphertext1, wordSize, bk);
     }
+
+    else if (operation == 115)
+    {
+      // Variance
+      token = strtok(NULL, " ");
+      cout << "RECEIVED: " << token << endl;
+      vector<string> dat = split(token, ",");
+      int size = stoi(dat[0]);
+      string ctxtLst[size];
+
+      // char tmp_buf[MAX];
+      // memset(tmp_buf, 0, MAX);
+      // tmp_buf[0] = 'O';
+      // tmp_buf[1] = 'K';
+      // write(tmp_socket, tmp_buf, sizeof(tmp_buf));
+
+      // for (int i = 0; i < size; i++)
+      // {
+      //   memset(tmp_buf, 0, MAX);
+
+      //   read(tmp_socket, tmp_buf, sizeof(tmp_buf));
+
+      //   token = strtok(tmp_buf, " ");
+      //   ctxtLst[i] = token;
+      //   cout << "\t\t" << ctxtLst[i] << endl;
+      //   tmp_buf[0] = 'O';
+      //   tmp_buf[1] = 'K';
+      //   write(tmp_socket, tmp_buf, sizeof(tmp_buf));
+      // }
+
+      vector<LweSample *> ctxt_lst;
+      for (int i = 0; i < size; i++)
+      {
+        ctxt_one_data = fopen(dat[i+1].c_str(), "rb");
+
+        for (int i = 0; i < wordSize; i++)
+        {
+          import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        }
+        ctxt_lst.push_back(ciphertext1);
+
+        fclose(ctxt_one_data);
+        ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      }
+      
+      LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
+      
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
+      }
+
+      variance(result, ctxt_lst, c_count, size, wordSize, bk);
+      
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
+    }
   }
 
   else
@@ -1832,6 +1926,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
 
 int listen_for_inst(int sockfd, TFheGateBootstrappingCloudKeySet *bk, const TFheGateBootstrappingParameterSet *params)
 {
+  tmp_socket = sockfd;
   char buf[MAX];
   for (;;)
   {
