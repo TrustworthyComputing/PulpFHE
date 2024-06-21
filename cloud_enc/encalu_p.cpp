@@ -28,19 +28,21 @@ using namespace std;
 
 int tmp_socket;
 
-vector<string> split(string s, string delimiter) {
-    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-    string token;
-    vector<string> res;
+vector<string> split(string s, string delimiter)
+{
+  size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+  string token;
+  vector<string> res;
 
-    while ((pos_end = s.find(delimiter, pos_start)) != string::npos) {
-        token = s.substr (pos_start, pos_end - pos_start);
-        pos_start = pos_end + delim_len;
-        res.push_back (token);
-    }
+  while ((pos_end = s.find(delimiter, pos_start)) != string::npos)
+  {
+    token = s.substr(pos_start, pos_end - pos_start);
+    pos_start = pos_end + delim_len;
+    res.push_back(token);
+  }
 
-    res.push_back (s.substr (pos_start));
-    return res;
+  res.push_back(s.substr(pos_start));
+  return res;
 }
 
 // Logic Functions
@@ -1185,14 +1187,14 @@ void compare_bit(LweSample *result, const LweSample *a, const LweSample *b, cons
 }
 
 // 108
-void max(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
+void max_tmp(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
   LweSample *tmps = new_gate_bootstrapping_ciphertext_array(2, bk->params);
 
   // initialize the carry to 0
   bootsCONSTANT(&tmps[0], 0, bk);
   bootsCONSTANT(&tmps[1], 0, bk);
-  
+
   // run the elementary comparator gate n times
   for (int i = 0; i < nb_bits; i++)
   {
@@ -1210,8 +1212,56 @@ void max(LweSample *result, const LweSample *a, const LweSample *b, const int nb
   delete_gate_bootstrapping_ciphertext_array(2, tmps);
 }
 
+void max(LweSample *result, vector<LweSample *> a, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
+{
+  LweSample *tmps = new_gate_bootstrapping_ciphertext_array(2, bk->params);
+  LweSample *max = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
+  LweSample *current = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
+
+  for (size_t i = 0; i < nb_bits; i++)
+  {
+    bootsCOPY(&max[i], &a[0][i], bk);
+  }
+
+  size_t size = a.size();
+  for (size_t indx = 1; indx < size; indx++)
+  {
+
+    for (size_t i = 1; i < nb_bits; i++)
+    {
+      bootsCOPY(&current[i], &a[indx][i], bk);
+    }
+
+    // initialize the carry to 0
+    bootsCONSTANT(&tmps[0], 0, bk);
+    bootsCONSTANT(&tmps[1], 0, bk);
+
+    // run the elementary comparator gate n times
+    for (int i = 0; i < nb_bits; i++)
+    {
+      compare_bit(&tmps[0], &max[i], &current[i], &tmps[0], &tmps[1], bk);
+    }
+    // tmps[0] is the result of the comparaison: 0 if a is larger, 1 if b is larger
+    // select the max and copy it to the result
+    int c;
+#pragma omp parallel for private(c) shared(result)
+    for (c = 0; c < nb_bits; c++)
+    {
+      bootsMUX(&result[c], &tmps[0], &max[c], &current[c], bk);
+    }
+
+    for (size_t i = 0; i < nb_bits; i++)
+    {
+      bootsCOPY(&max[i], &result[i], bk);
+    }
+  }
+  delete_gate_bootstrapping_ciphertext_array(nb_bits, max);
+  delete_gate_bootstrapping_ciphertext_array(nb_bits, current);
+  delete_gate_bootstrapping_ciphertext_array(2, tmps);
+}
+
 // 109
-void min(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
+void min_tmp(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
   LweSample *tmps = new_gate_bootstrapping_ciphertext_array(2, bk->params);
 
@@ -1234,47 +1284,93 @@ void min(LweSample *result, const LweSample *a, const LweSample *b, const int nb
   delete_gate_bootstrapping_ciphertext_array(2, tmps);
 }
 
+void min(LweSample *result, vector<LweSample *> a, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
+{
+  LweSample *tmps = new_gate_bootstrapping_ciphertext_array(2, bk->params);
+  LweSample *min = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
+  LweSample *current = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
+
+  for (size_t i = 0; i < nb_bits; i++)
+  {
+    bootsCOPY(&min[i], &a[0][i], bk);
+  }
+
+  size_t size = a.size();
+  for (size_t indx = 1; indx < size; indx++)
+  {
+
+    for (size_t i = 1; i < nb_bits; i++)
+    {
+      bootsCOPY(&current[i], &a[indx][i], bk);
+    }
+
+    // initialize the carry to 0
+    bootsCONSTANT(&tmps[0], 0, bk);
+    bootsCONSTANT(&tmps[1], 0, bk);
+
+    // run the elementary comparator gate n times
+    for (int i = 0; i < nb_bits; i++)
+    {
+      compare_bit(&tmps[0], &min[i], &current[i], &tmps[0], &tmps[1], bk);
+    }
+    // tmps[0] is the result of the comparaison: 0 if a is larger, 1 if b is larger
+    // select the max and copy it to the result
+    int c;
+#pragma omp parallel for private(c) shared(result)
+    for (c = 0; c < nb_bits; c++)
+    {
+      bootsMUX(&result[c], &tmps[0], &current[c], &min[c], bk);
+    }
+
+    for (size_t i = 0; i < nb_bits; i++)
+    {
+      bootsCOPY(&min[i], &result[i], bk);
+    }
+  }
+  delete_gate_bootstrapping_ciphertext_array(nb_bits, min);
+  delete_gate_bootstrapping_ciphertext_array(nb_bits, current);
+  delete_gate_bootstrapping_ciphertext_array(2, tmps);
+}
+
 // 110 ...
 void relu(LweSample *result, const LweSample *a, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
   LweSample *p2 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
-  bootsNOT(&p2[nb_bits-1], &a[nb_bits-1], bk); 
-  for (size_t i = 0; i < nb_bits-1; i++)
+  bootsNOT(&p2[nb_bits - 1], &a[nb_bits - 1], bk);
+  for (size_t i = 0; i < nb_bits - 1; i++)
   {
-    bootsCONSTANT(&p2[i], 0, bk); 
+    bootsCONSTANT(&p2[i], 0, bk);
   }
 
   LweSample *p3 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   for (size_t i = 0; i < nb_bits; i++)
   {
-    bootsCOPY(&p3[i], &p2[nb_bits-i-1], bk); 
+    bootsCOPY(&p3[i], &p2[nb_bits - i - 1], bk);
   }
 
   multiplier(result, p3, a, nb_bits, bk);
- 
+
   delete_gate_bootstrapping_ciphertext_array(nb_bits, p2);
   delete_gate_bootstrapping_ciphertext_array(nb_bits, p3);
-  
 }
 
 void relu_tmp(LweSample *result, const LweSample *a, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
   cout << "this is relu..." << endl;
-  
+
   LweSample *tmps = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
-  bootsCOPY(&tmps[nb_bits-1], &a[nb_bits-1], bk);
-  for (size_t i = 0; i < nb_bits-1; i++)
+  bootsCOPY(&tmps[nb_bits - 1], &a[nb_bits - 1], bk);
+  for (size_t i = 0; i < nb_bits - 1; i++)
   {
     bootsCONSTANT(&tmps[i], 0, bk);
   }
 
-  
   LweSample *zero = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   for (size_t i = 0; i < nb_bits; i++)
   {
     bootsCONSTANT(&zero[i], 0, bk);
   }
-  
+
   LweSample *one = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   for (size_t i = 1; i < nb_bits; i++)
   {
@@ -1282,30 +1378,26 @@ void relu_tmp(LweSample *result, const LweSample *a, const int nb_bits, const TF
   }
   bootsCONSTANT(&one[0], 1, bk);
 
-
   LweSample *p1 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   multiplier(p1, zero, tmps, nb_bits, bk);
-  
 
   LweSample *p2 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
-  bootsNOT(&p2[nb_bits-1], &tmps[nb_bits-1], bk); 
-  for (size_t i = 0; i < nb_bits-1; i++)
+  bootsNOT(&p2[nb_bits - 1], &tmps[nb_bits - 1], bk);
+  for (size_t i = 0; i < nb_bits - 1; i++)
   {
-    bootsCOPY(&p2[i], &tmps[i], bk); 
+    bootsCOPY(&p2[i], &tmps[i], bk);
   }
 
   LweSample *p3 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   for (size_t i = 0; i < nb_bits; i++)
   {
-    bootsCOPY(&p3[i], &p2[nb_bits-i-1], bk); 
+    bootsCOPY(&p3[i], &p2[nb_bits - i - 1], bk);
   }
-  
 
   LweSample *p4 = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   multiplier(p4, p3, a, nb_bits, bk);
-  
-  adder(result, p1, p4, nb_bits, bk);
 
+  adder(result, p1, p4, nb_bits, bk);
 
   delete_gate_bootstrapping_ciphertext_array(2, tmps);
 }
@@ -1897,7 +1989,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
     }
 
     else if (operation == 114)
-    { 
+    {
       // sqrt
       token = strtok(NULL, " ");
       ctxt_one_data = fopen(token, "rb");
@@ -1943,7 +2035,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       vector<LweSample *> ctxt_lst;
       for (int i = 0; i < size; i++)
       {
-        ctxt_one_data = fopen(dat[i+1].c_str(), "rb");
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
 
         for (int i = 0; i < wordSize; i++)
         {
@@ -1954,16 +2046,16 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
         fclose(ctxt_one_data);
         ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
       }
-      
+
       LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
-      
+
       for (int i = 0; i < wordSize; i++)
       {
         bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
       }
 
       variance(result, ctxt_lst, c_count, size, wordSize, bk);
-      
+
       delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
     }
 
@@ -1978,7 +2070,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       vector<LweSample *> ctxt_lst;
       for (int i = 0; i < size; i++)
       {
-        ctxt_one_data = fopen(dat[i+1].c_str(), "rb");
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
 
         for (int i = 0; i < wordSize; i++)
         {
@@ -1989,16 +2081,16 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
         fclose(ctxt_one_data);
         ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
       }
-      
+
       LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
-      
+
       for (int i = 0; i < wordSize; i++)
       {
         bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
       }
 
       mean(result, ctxt_lst, c_count, size, wordSize, bk);
-      
+
       delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
     }
 
@@ -2013,7 +2105,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       vector<LweSample *> ctxt_lst;
       for (int i = 0; i < size; i++)
       {
-        ctxt_one_data = fopen(dat[i+1].c_str(), "rb");
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
 
         for (int i = 0; i < wordSize; i++)
         {
@@ -2024,21 +2116,21 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
         fclose(ctxt_one_data);
         ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
       }
-      
+
       LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
-      
+
       for (int i = 0; i < wordSize; i++)
       {
         bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
       }
 
       stdev(result, ctxt_lst, c_count, size, wordSize, bk);
-      
+
       delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
     }
 
     else if (operation == 118)
-    { 
+    {
       // relu
       token = strtok(NULL, " ");
       ctxt_one_data = fopen(token, "rb");
@@ -2051,7 +2143,76 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
       fclose(ctxt_one_data);
       relu(result, ciphertext1, wordSize, bk);
     }
-  
+
+    else if (operation == 119)
+    {
+      // Max
+      token = strtok(NULL, " ");
+      vector<string> dat = split(token, ",");
+      int size = stoi(dat[0]);
+      string ctxtLst[size];
+
+      vector<LweSample *> ctxt_lst;
+      for (int i = 0; i < size; i++)
+      {
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
+
+        for (int i = 0; i < wordSize; i++)
+        {
+          import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        }
+        ctxt_lst.push_back(ciphertext1);
+
+        fclose(ctxt_one_data);
+        ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      }
+
+      LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
+      }
+
+      max(result, ctxt_lst, wordSize, bk);
+
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
+    }
+
+    else if (operation == 120)
+    {
+      // Min
+      token = strtok(NULL, " ");
+      vector<string> dat = split(token, ",");
+      int size = stoi(dat[0]);
+      string ctxtLst[size];
+
+      vector<LweSample *> ctxt_lst;
+      for (int i = 0; i < size; i++)
+      {
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
+
+        for (int i = 0; i < wordSize; i++)
+        {
+          import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        }
+        ctxt_lst.push_back(ciphertext1);
+
+        fclose(ctxt_one_data);
+        ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      }
+
+      LweSample *c_count = new_gate_bootstrapping_ciphertext_array(wordSize, bk->params);
+
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_count[i], (size >> i) & 1, bk);
+      }
+
+      min(result, ctxt_lst, wordSize, bk);
+
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
+    }
   }
 
   else

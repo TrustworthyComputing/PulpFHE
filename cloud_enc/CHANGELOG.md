@@ -1,7 +1,7 @@
 # The Dawn
 * `juliet_interpreter.py`:
     
-    * Cancelled sending `exit` command to exit the server.
+    * Canalled sending `exit` command to exit the server.
 
 * `encalu_p.cpp`:
 
@@ -68,9 +68,16 @@
     * The `estd` instruction has been integrated and assigned ID 117.
     * The `erelu` instruction has been integrated and assigned ID 118.
 
-# Fixed relu
+# Fixed relu and negative result output
 
 * `relu` had an issue with comparing negative numbers.
 * `client\decrypt.c` didn't print negative number, I fixed this by converting the number 
 into the 2's complement representation.
 
+# Added max and min
+*  `juliet_interpreter.py`:
+    * Added the `emax` and `emin` instructions.
+
+*  `encalu_p.cpp`
+    * The `emax` instruction has been integrated and assigned ID 119.
+    * The `emin` instruction has been integrated and assigned ID 120.
