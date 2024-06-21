@@ -4,6 +4,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+int toSignedInt(unsigned int value, int bitLength)
+{
+    int signedValue = value;
+    if (value >> (bitLength - 1))
+        signedValue |= -1 << bitLength;
+    return signedValue;
+}
+
 int main(int argc, char** argv) {
 
     //reads the secret key from file
@@ -29,12 +37,14 @@ int main(int argc, char** argv) {
     for (int i=0; i<wordSize; i++) {
         int ai = bootsSymDecrypt(&answer[i], key)>0;
         int_answer |= (ai<<i);
+
     }
+
 
     //clean up all pointers
     delete_gate_bootstrapping_ciphertext_array(wordSize, answer);
     delete_gate_bootstrapping_secret_keyset(key);
 
-    printf("Decrypted Answer: %d\n", int_answer);
+    printf("Decrypted Answer: %d\n", toSignedInt(int_answer, wordSize));
     return int_answer;
 }

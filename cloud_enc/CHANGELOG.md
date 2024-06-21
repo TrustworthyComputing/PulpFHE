@@ -1,20 +1,20 @@
 # The Dawn
 * `juliet_interpreter.py`:
     
-    * Canclled sending `exit` command to exit the server.
+    * Cancelled sending `exit` command to exit the server.
 
 * `encalu_p.cpp`:
 
     * Added the new instructions.
     * The addition instruction uses the `p_adder` function to map the execution to the Kogge-Stone adder. If the adder doesn't support a specific word size, it uses the normal adder function. 
     * The serial normal adder function itself is modified to be parallelizable.
-    * The `listen_for_inst` funciton is refactored to fit in the cpp file.
+    * The `listen_for_inst` function is refactored to fit in the cpp file.
 
 # Adding div and mod
 
 * `juliet_interpreter.py`:
     
-    * Enabled sending `exit` command to exit the server to avoid socket binding failuer.
+    * Enabled sending `exit` command to exit the server to avoid socket binding failure.
 
 * `encalu_p.cpp`:
 
@@ -49,7 +49,7 @@
 
 *  `encalu_p.cpp`
     * The `evar` instruction has been integrated and assigned ID 115.
-    * Added `split` function to split list of ciphertexts received from the intrepreter.
+    * Added `split` function to split list of ciphertexts received from the interpreter.
     
 # Adding mean
 
@@ -58,3 +58,19 @@
 
 *  `encalu_p.cpp`
     * The `emean` instruction has been integrated and assigned ID 116.
+
+# Adding std, relu
+
+*  `juliet_interpreter.py`:
+    * Added the `estd` and `erelu` instructions.
+
+*  `encalu_p.cpp`
+    * The `estd` instruction has been integrated and assigned ID 117.
+    * The `erelu` instruction has been integrated and assigned ID 118.
+
+# Fixed relu
+
+* `relu` had an issue with comparing negative numbers.
+* `client\decrypt.c` didn't print negative number, I fixed this by converting the number 
+into the 2's complement representation.
+

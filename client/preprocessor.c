@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
       for (int i=0; i<wordSize; i++) {
         bootsSymEncrypt(&ctxt[i], (plaintext1>>i)&1, key);
       }
+
       fileName = gen_filename();
       size_t fname_len = strlen(directory) + strlen(fileName) + 1;
       char* full_fname = (char*)malloc(fname_len);
