@@ -27,6 +27,7 @@ using namespace std;
 #define SA struct sockaddr
 
 int tmp_socket;
+bool list_of_results = false;
 
 vector<string> split(string s, string delimiter)
 {
@@ -1016,6 +1017,8 @@ void rot_l(LweSample *result, const LweSample *a, const int amnt, const int nb_b
 // 107
 void blake3(vector<LweSample *> &result, vector<LweSample *> msg, const vector<LweSample *> v, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
+  list_of_results = true;
+
   LweSample *a = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   LweSample *b = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
   LweSample *c = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
@@ -1737,6 +1740,7 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
   LweSample *ciphertext3 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
 
   LweSample *result = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+  vector<LweSample *> result_lst;
 
   FILE *ctxt_one_data;
   FILE *ctxt_two_data;
@@ -2213,6 +2217,73 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
 
       delete_gate_bootstrapping_ciphertext_array(wordSize, c_count);
     }
+
+    else if (operation == 121)
+    {
+      // Blake3
+      token = strtok(NULL, " ");
+      vector<string> dat = split(token, ",");
+      int size = stoi(dat[0]);
+      string ctxtLst[size];
+
+      vector<LweSample *> ctxt_lst;
+      for (int i = 0; i < size; i++)
+      {
+        ctxt_one_data = fopen(dat[i + 1].c_str(), "rb");
+
+        for (int i = 0; i < wordSize; i++)
+        {
+          import_gate_bootstrapping_ciphertext_fromFile(ctxt_one_data, &ciphertext1[i], params);
+        }
+
+        ctxt_lst.push_back(ciphertext1);
+
+        fclose(ctxt_one_data);
+        ciphertext1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      }
+
+      vector<LweSample *> iv;
+
+      int32_t v0 = 0x6a09e667;
+      LweSample *c_v0 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_v0[i], (v0 >> i) & 1, bk);
+      }
+
+      int32_t v1 = 0xbb67ae85;
+      LweSample *c_v1 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_v1[i], (v1 >> i) & 1, bk);
+      }
+
+      int32_t v2 = 0x3c6ef372;
+      LweSample *c_v2 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_v2[i], (v2 >> i) & 1, bk);
+      }
+
+      int32_t v3 = 0xa54ff53a;
+      LweSample *c_v3 = new_gate_bootstrapping_ciphertext_array(wordSize, params);
+      for (int i = 0; i < wordSize; i++)
+      {
+        bootsCONSTANT(&c_v3[i], (v3 >> i) & 1, bk);
+      }
+
+      iv.push_back(c_v0);
+      iv.push_back(c_v1);
+      iv.push_back(c_v2);
+      iv.push_back(c_v3);
+
+      blake3(result_lst, ctxt_lst, iv, wordSize, bk);
+
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_v0);
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_v1);
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_v2);
+      delete_gate_bootstrapping_ciphertext_array(wordSize, c_v3);
+    }
   }
 
   else
@@ -2224,8 +2295,20 @@ void op_select(char *instruction, TFheGateBootstrappingCloudKeySet *bk, const TF
   char *fileName = (char *)malloc(50);
   fileName = gen_filename();
   FILE *answer_data = fopen(fileName, "wb");
-  for (int i = 0; i < wordSize; i++)
-    export_gate_bootstrapping_ciphertext_toFile(answer_data, &result[i], params);
+  if (list_of_results)
+  {
+    for (size_t indx = 0; indx < result_lst.size(); indx++)
+    {
+      for (int i = 0; i < wordSize; i++)
+        export_gate_bootstrapping_ciphertext_toFile(answer_data, &result_lst[indx][i], params);
+    }
+  }
+  else
+  {
+    for (int i = 0; i < wordSize; i++)
+      export_gate_bootstrapping_ciphertext_toFile(answer_data, &result[i], params);
+  }
+  list_of_results = false;
   fclose(answer_data);
 
   // export ciphertext filename to ctxtmem.txt

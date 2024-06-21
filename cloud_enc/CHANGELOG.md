@@ -81,3 +81,13 @@ into the 2's complement representation.
 *  `encalu_p.cpp`
     * The `emax` instruction has been integrated and assigned ID 119.
     * The `emin` instruction has been integrated and assigned ID 120.
+
+# Added Blake3
+*  `juliet_interpreter.py`:
+    * Added the `eblk` instruction.
+
+*  `encalu_p.cpp`
+    * The `eblk` instruction has been integrated and assigned ID 121.
+
+* `ppscript.sh`
+    * Set the default word size to 32 bits.

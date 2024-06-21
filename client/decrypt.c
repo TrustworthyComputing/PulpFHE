@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     fclose(answer_data);
 
     //decrypt and rebuild the answer
-    int int_answer = 0;
+    int64_t int_answer = 0;
     for (int i=0; i<wordSize; i++) {
         int ai = bootsSymDecrypt(&answer[i], key)>0;
         int_answer |= (ai<<i);
