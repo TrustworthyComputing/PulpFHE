@@ -50,7 +50,9 @@ vector<string> split(string s, string delimiter)
 // 0
 void e_and(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsAND(&result[i], &a[i], &b[i], bk);
   }
@@ -59,7 +61,9 @@ void e_and(LweSample *result, const LweSample *a, const LweSample *b, const int 
 // 1
 void e_nand(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsNAND(&result[i], &a[i], &b[i], bk);
   }
@@ -68,7 +72,9 @@ void e_nand(LweSample *result, const LweSample *a, const LweSample *b, const int
 // 2
 void e_or(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsOR(&result[i], &a[i], &b[i], bk);
   }
@@ -77,7 +83,9 @@ void e_or(LweSample *result, const LweSample *a, const LweSample *b, const int n
 // 3
 void e_nor(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsNOR(&result[i], &a[i], &b[i], bk);
   }
@@ -86,7 +94,9 @@ void e_nor(LweSample *result, const LweSample *a, const LweSample *b, const int 
 // 4
 void e_xor(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsXOR(&result[i], &a[i], &b[i], bk);
   }
@@ -95,7 +105,9 @@ void e_xor(LweSample *result, const LweSample *a, const LweSample *b, const int 
 // 5
 void e_xnor(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsXNOR(&result[i], &a[i], &b[i], bk);
   }
@@ -104,7 +116,9 @@ void e_xnor(LweSample *result, const LweSample *a, const LweSample *b, const int
 // 9
 void e_not(LweSample *result, const LweSample *a, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsNOT(&result[i], &a[i], bk);
   }
@@ -170,7 +184,9 @@ void e_shr(LweSample *result, const LweSample *a, const int shift_amt, const int
 // 12
 void e_mux(LweSample *result, const LweSample *sel, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 {
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+#pragma omp parallel for private(i) shared(result)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsMUX(&result[i], &sel[0], &a[i], &b[i], bk);
   }
@@ -330,9 +346,9 @@ void adder(LweSample *result, const LweSample *a, const LweSample *b, const int 
 
   // initialize first carry to 0
   bootsCONSTANT(&carry[0], 0, bk);
-
-#pragma omp parallel for
-  for (int i = 0; i < nb_bits; i++)
+  int i;
+  #pragma omp parallel for private(i) shared(temp)
+  for (i = 0; i < nb_bits; i++)
   {
     bootsXOR(&temp[i], &a[i], &b[i], bk);
   }
@@ -402,6 +418,8 @@ void multiplier(LweSample *result, const LweSample *a, const LweSample *b, const
     {
       bootsCONSTANT(&tmp_array[k], 0, bk);
     }
+    int j;
+#pragma omp parallel for private(j) shared(tmp_array)
     for (int j = 0; j < nb_bits - i; ++j)
     {
       bootsAND(&tmp_array[j], &a[i], &b[j], bk);

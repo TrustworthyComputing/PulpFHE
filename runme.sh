@@ -6,6 +6,8 @@ make encalu_cpu
 
 (cd cloud_enc/ && rm *.data)
 
+(cd cloud_enc/encrypted_data && rm *.data)
+
 (cd client/ && ./keygen)
 
 (cd client/ && bash ppscript.sh)

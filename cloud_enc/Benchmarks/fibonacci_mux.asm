@@ -22,7 +22,7 @@ econst t7, t6
 ecmpeq v1, t7, t3
 move t7, v1
 econst t8, 0
-mux t7, t7, t2, t8
+emux t7, t7, t2, t8
 or v1, t4, t7
 move t4, v1
 eadd v1, t0, t1

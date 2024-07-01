@@ -3,6 +3,7 @@ import subprocess
 import sys
 import socket
 import time
+import argparse
 
 regList = []
 label_to_pc = {}
@@ -582,7 +583,7 @@ def pulpme(fileName, W=8, K=16):
             if (str(P[pc + 3]).isnumeric() == True): # shift value
                 shift_val = int(P[pc + 3])
             else:
-                shift_val = reg_ptxt[P[pc + 3]]
+                shift_val = bits_to_num(regList[regSelect(P[pc + 3], K)], W)
 
             with open("ctxtMem.txt") as f:
                 content = f.readlines()
@@ -605,7 +606,7 @@ def pulpme(fileName, W=8, K=16):
             if (str(P[pc + 3]).isnumeric() == True): # shift value
                 shift_val = int(P[pc + 3])
             else:
-                shift_val = reg_ptxt[P[pc + 3]]
+                shift_val = bits_to_num(regList[regSelect(P[pc + 3], K)], W)
             
             with open("ctxtMem.txt") as f:
                 content = f.readlines()
@@ -1407,6 +1408,41 @@ def pulpme(fileName, W=8, K=16):
                 print(P[pc-1], P[pc+1])
                 break
 
+
+parser = argparse.ArgumentParser(description='Optional app description')
+parser.add_argument('asm_file', type=str,
+                    help='The asm file is missing')
+
+# Optional positional argument
+parser.add_argument('wordSize', type=int, nargs='?',
+                    help='The word size (default 16)')
+
+# Optional argument
+parser.add_argument('registers', type=int, nargs='?',
+                    help='The number of registers (default 64)')
+
+args = parser.parse_args()
+word = 16
+regs = 64
+filename = "Benchmarks/"
+if len(sys.argv) == 2:
+    filename += args.asm_file
+elif len(sys.argv) == 3:
+    filename += args.asm_file
+    word = args.wordSize
+elif len(sys.argv) == 4:
+    filename += args.asm_file
+    word = args.wordSize
+    regs = args.registers
+else:
+    print("You have to at least enter the .asm filename.")
+
 start = time.time()
-pulpme("Benchmarks/enc_blake3.asm", W=32, K=128)
-print("Time elapsed: ", time.time() - start)
+pulpme(filename, W=word, K=regs)
+time_elapsed = time.time() - start
+with open("execution_time.txt", 'a+') as file:
+    log = filename + " (" + str(word) + ", " + str(regs) + "): " + str(time_elapsed) + "\n"
+    file.write(log)
+
+print("Time elapsed: ", time_elapsed)
+ 
