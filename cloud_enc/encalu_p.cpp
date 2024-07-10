@@ -22,7 +22,7 @@
 #include <sstream>
 using namespace std;
 
-#define MAX 100
+#define MAX 6000
 #define PORT 8080
 #define SA struct sockaddr
 
@@ -1245,10 +1245,10 @@ void max(LweSample *result, vector<LweSample *> a, const int nb_bits, const TFhe
   }
 
   size_t size = a.size();
-  for (size_t indx = 1; indx < size; indx++)
+  for (size_t indx = 0; indx < size; indx++)
   {
 
-    for (size_t i = 1; i < nb_bits; i++)
+    for (size_t i = 0; i < nb_bits; i++)
     {
       bootsCOPY(&current[i], &a[indx][i], bk);
     }

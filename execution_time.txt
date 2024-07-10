@@ -1,0 +1,25 @@
+Benchmarks/add.asm (16, 64): 34.15641736984253
+Benchmarks/add.asm (16, 64): 33.257652759552
+Benchmarks/add.asm (16, 64): 0.19878673553466797
+Benchmarks/add.asm (16, 64): 0.16515111923217773
+Benchmarks/add.asm (16, 64): 0.19170928001403809
+Benchmarks/add.asm (16, 64): 0.21106219291687012
+Benchmarks/add.asm (16, 64): 0.15650606155395508
+Benchmarks/Simon.asm (16, 64): 7.424594163894653
+Benchmarks/Speck.asm (16, 64): 19.038039922714233
+Benchmarks/LRInference.asm (16, 64): 113.20771908760071
+Benchmarks/fibonacci.asm (16, 64): 150.90263414382935
+Benchmarks/fibonacci_mux.asm (16, 64): 36.29594135284424
+Benchmarks/factorial.asm (16, 64): 239.5880446434021
+Benchmarks/PIR.asm (16, 64): 72.51713514328003
+-----------------------------------------------------------
+Benchmarks/Simon_new.asm (16, 64): 7.468507528305054
+Benchmarks/Speck.asm (16, 64): 19.03781032562256
+Benchmarks/LRInference.asm (16, 64): 113.24218106269836
+Benchmarks/fibonacci.asm (16, 64): 151.8113341331482
+Benchmarks/fibonacci_mux.asm (16, 64): 36.36135244369507
+Benchmarks/fibonacci_mux.asm (16, 64): 36.13932394981384
+Benchmarks/factorial.asm (16, 64): 239.2455611228943
+Benchmarks/SieveOfEratosthenes.asm (16, 64): 103.75141406059265
+Benchmarks/PIR.asm (16, 64): 72.28855180740356
+
