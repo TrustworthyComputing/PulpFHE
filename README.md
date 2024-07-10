@@ -2,7 +2,7 @@
 <h3 align="center">Complex Instruction Set Extensions for FHE Processors</h3>
 
 ### What is PulpFHE
-PulpFHE is an extension unit with optimized non-linear functions for FHE processors. This project is a deployment of the new instructions set on its sister project, [Juliet](https://github.com/TrustworthyComputing/Juliet)
+PulpFHE is an extension unit with optimized non-linear functions for FHE processors. This project is a deployment of the new instructions set on its sister project, [Juliet](https://github.com/TrustworthyComputing/Juliet).
 
 *The following instructions are the same of which are found in the Juliet repository*
 
