@@ -915,10 +915,10 @@ void p_adder_8(LweSample *result, const LweSample *a, const LweSample *b, const 
     {
       bootsXOR(&result[i], &g3[i - 1], &p0[i], bk);
     }
-    else
-    {
-      bootsXOR(&result[i], &g4[i - 1], &p0[i], bk);
-    }
+//    else
+//    {
+//      bootsXOR(&result[i], &g4[i - 1], &p0[i], bk);
+//    }
   }
   bootsCOPY(&carry_out[0], &g4[nb_bits - 1], bk);
 }

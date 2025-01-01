@@ -2,3 +2,8 @@
 /cloud_enc/.vscode
 /cloud_enc/.vscode
 LICENSE
+.DS_Store
+cloud_enc/.idea/cloud_enc.iml
+cloud_enc/.idea/modules.xml
+cloud_enc/.idea/vcs.xml
+cloud_enc/.idea/workspace.xml
