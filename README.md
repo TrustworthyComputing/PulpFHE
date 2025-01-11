@@ -1,13 +1,5 @@
-<h1 align="center">PulpFHE </h1>
-<h3 align="center">Complex Instruction Set Extensions for FHE Processors</h3>
-
-### What is PulpFHE
-PulpFHE is an extension unit with optimized non-linear functions for FHE processors. This project is a deployment of the new instructions set on its sister project [Juliet](https://github.com/TrustworthyComputing/Juliet).
-
-This project introduces several optimizations to existing Juliet circuits to enable parallel execution.
-
-*The following instructions are the same of which are found in the Juliet repository*
-
+<h1 align="center">Juliet <a href="https://github.com/TrustworthyComputing/Juliet/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a> </h1>
+<h3 align="center">An Execution Engine for an Encrypted Processor</h3>
 
 ### Prerequisites 
 1. Install [TFHE](https://github.com/tfhe/tfhe) 
@@ -18,8 +10,17 @@ export LIBRARY_PATH=$LIBRARY_PATH:<CUFHE_DIR>/cufhe/bin
 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:<CUFHE_DIR>/cufhe/include
 ```
 
+### Overview
+Juliet is a framework for general-purpose computation with Fully Homomorphic
+Encryption (FHE).
+
+docker build -t juliet .
+
+docker run --rm -i -t juliet bash
+
 ### Client Setup
-1. Run ``make client_scripts_cpu`` for the CPU-based TFHE backend.
+1. Run ``make client_scripts_cpu`` for the CPU-based TFHE backend or ``make client_scripts_gpu`` for
+   the cuFHE GPU-based backend.
 2. Navigate to the ``client`` directory and run ``./keygen.out`` to generate an
    FHE keypair. The evaluation key needed for FHE operations will be placed in
    the ``cloud_enc`` directory.
@@ -31,7 +32,15 @@ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:<CUFHE_DIR>/cufhe/include
 5. Upload the entire ``cloud_enc`` directory to the cloud server.
 
 ### How to cite this work
-
+The Juliet paper can be accessed [here](https://trustworthycomputing.github.io/Juliet/Juliet.2024.pdf); you can cite this work as follows:
+```
+@misc{gouert2024Juliet,
+    author       = {Charles Gouert and Dimitris Mouris and Nektarios Georgios Tsoutsos},
+    title        = {{Juliet: A Configurable Processor for Computing on Encrypted Data}},
+    year         = {2024},
+    note         = {\url{https://trustworthycomputing.github.io/Juliet/Juliet.2024.pdf}},
+}
+```
 
 
 <p align="center">

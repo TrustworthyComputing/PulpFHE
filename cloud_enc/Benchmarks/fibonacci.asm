@@ -3,7 +3,7 @@ econst t1, 0
 econst t2, 0
 econst t3, 0
 econst t4, 0
-move t5, 20
+move t5, 16
 secread t6
 move t3, t6
 secread t6

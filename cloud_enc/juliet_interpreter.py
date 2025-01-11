@@ -607,7 +607,7 @@ def pulpme(fileName, W=8, K=16):
                 shift_val = int(P[pc + 3])
             else:
                 shift_val = bits_to_num(regList[regSelect(P[pc + 3], K)], W)
-            
+            print(shift_val)
             with open("ctxtMem.txt") as f:
                 content = f.readlines()
             content = [x.strip() for x in content]
@@ -1422,8 +1422,8 @@ parser.add_argument('registers', type=int, nargs='?',
                     help='The number of registers (default 64)')
 
 args = parser.parse_args()
-word = 16
-regs = 64
+word = 8
+regs = 128
 filename = "Benchmarks/"
 if len(sys.argv) == 2:
     filename += args.asm_file

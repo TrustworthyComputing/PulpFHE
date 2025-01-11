@@ -6,6 +6,10 @@ make encalu_cpu
 
 (cd cloud_enc/ && rm *.data)
 
+(cd cloud_enc/ && rm ctxtMem.txt)
+
+(cd cloud_enc/tapes && rm priv.txt)
+
 (cd cloud_enc/encrypted_data && rm *.data)
 
 (cd client/ && ./keygen)

@@ -1,4 +1,4 @@
-move t0, 20
+move t0, 60
 move t1, 1
 econst t2, t0
 econst t1, t1

@@ -4,5 +4,5 @@ client_scripts_cpu: client/keygen.c client/preprocessor.c client/decrypt.c clien
 	gcc -o client/decrypt client/decrypt.c -ltfhe-spqlios-fma
 
 encalu_cpu: cloud_enc/encalu_p.cpp cloud_enc/filenames_p.cpp
-	g++ -o cloud_enc/encalu_cpu_p cloud_enc/encalu_p.cpp cloud_enc/filenames_p.cpp -ltfhe-spqlios-fma -fopenmp
-
+	#g++ -o cloud_enc/encalu_cpu_p cloud_enc/encalu_p.cpp cloud_enc/filenames_p.cpp -ltfhe-spqlios-fma -fopenmp
+	gcc -o cloud_enc/encalu_cpu_p cloud_enc/encalu.c cloud_enc/filenames.c -ltfhe-spqlios-fma
