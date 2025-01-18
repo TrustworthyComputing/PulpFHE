@@ -4,9 +4,7 @@
 ### What is PulpFHE
 PulpFHE is an extension unit with optimized non-linear functions for FHE processors. This project is a deployment of the new instructions set on its sister project, [Juliet](https://github.com/TrustworthyComputing/Juliet).
 
-This project introduces several optimizations to existing Juliet circuits to enable parallel execution.
-
-*The following instructions are the same of which are found in the Juliet repository*
+This project introduces several optimizations and extensions to the existing Juliet architecutre.
 
 
 ### Prerequisites 
@@ -17,18 +15,20 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<TFHE_INSTALL_DIR>/lib
 export LIBRARY_PATH=$LIBRARY_PATH:<CUFHE_DIR>/cufhe/bin
 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:<CUFHE_DIR>/cufhe/include
 ```
+### How to Run
+1. Navigate to the ``client`` directory, open the ``ppscript.sh`` file, and edit the ``wordsize`` variable to specify the bit size of the data.
+     * PulpFHE supports 8, 16, and 32-bit data.
+2. Edit the ``preAux.txt`` file to input the plaintext data to be encrypted and processed.
+3. From the ``PulpFHE`` directory, launch the server by running ``bash runme.sh``.
+4. From another terminal, navigate to the ``cloud_enc`` directory and run the processor by running the interperter using the following command: 
+``python3 pulpfhe_interpreter.py <program-name> [wordsize] [number-of-registers]``.
+   * The ``<program-name>`` is the name of the assembly file in the ``Benchmarks`` directory.
+   * The ``[wordsize]`` is the size of the plaintext data in bits. The default is 8.
+   * The ``[number-of-registers]`` is the number of registers that processor will use. The defualt is 128.
+   * Please note that when passing ``<program-name>``, just pass the filename and the interperter will automatically fetch it from the ``Benchmarks`` directory.
+5. To print the output, go to the ``client`` directory, and run ``./decrypt ../cloud_enc/output.data <wordsize>``.
 
-### Client Setup
-1. Run ``make client_scripts_cpu`` for the CPU-based TFHE backend.
-2. Navigate to the ``client`` directory and run ``./keygen.out`` to generate an
-   FHE keypair. The evaluation key needed for FHE operations will be placed in
-   the ``cloud_enc`` directory.
-3. Create a file named ``preAux.txt`` and load this with cleartext integer inputs (one
-   per line) that represent sensitive data and will serve as sensitive program inputs
-   for Juliet. 
-4. Run ``./ppscript.sh`` to automatically generate a ciphertext memory
-   directory, which will be placed in the ``cloud_enc`` directory. 
-5. Upload the entire ``cloud_enc`` directory to the cloud server.
+The companion upgraded HE-Java compiler can be found at [HE-Java-Compiler](https://github.com/OmarAlmighty/HEJava-compiler/tree/master)
 
 ### How to cite this work
 
