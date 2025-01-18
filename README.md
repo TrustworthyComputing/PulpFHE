@@ -30,9 +30,6 @@ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:<CUFHE_DIR>/cufhe/include
 
 The companion upgraded HE-Java compiler can be found at [HE-Java-Compiler](https://github.com/OmarAlmighty/HEJava-compiler/tree/master)
 
-### How to cite this work
-
-
 
 <p align="center">
     <img src="./logos/twc.png" height="20%" width="20%">
