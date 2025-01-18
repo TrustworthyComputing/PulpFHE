@@ -282,37 +282,37 @@ void comparator(LweSample *result, const LweSample *a, const LweSample *b, const
 	}
 	// 6
 	/*
-	   void subtracter(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
-	   {
-
-	   LweSample *borrow = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
-	   LweSample *temp = new_gate_bootstrapping_ciphertext_array(3, bk->params);
-
-	// run half subtractor
-	bootsXOR(&result[0], &a[0], &b[0], bk);
-	bootsNOT(&temp[0], &a[0], bk);
-	bootsAND(&borrow[0], &temp[0], &b[0], bk);
-
-	// run full subtractors
-	for (int i = 1; i < nb_bits; i++)
+	void subtracter(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 	{
 
-	// Calculate difference
-	bootsXOR(&temp[0], &a[i], &b[i], bk);
-	bootsXOR(&result[i], &temp[0], &borrow[i - 1], bk);
+		LweSample *borrow = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
+		LweSample *temp = new_gate_bootstrapping_ciphertext_array(3, bk->params);
 
-	// Calculate borrow
-	bootsNOT(&temp[1], &a[i], bk);
-	bootsAND(&temp[2], &temp[1], &b[i], bk);
-	bootsNOT(&temp[0], &temp[0], bk);
-	bootsAND(&temp[1], &borrow[i - 1], &temp[0], bk);
-	bootsOR(&borrow[i], &temp[2], &temp[1], bk);
-	}
+		// run half subtractor
+		bootsXOR(&result[0], &a[0], &b[0], bk);
+		bootsNOT(&temp[0], &a[0], bk);
+		bootsAND(&borrow[0], &temp[0], &b[0], bk);
 
-	delete_gate_bootstrapping_ciphertext_array(nb_bits, borrow);
-	delete_gate_bootstrapping_ciphertext_array(3, temp);
+		// run full subtractors
+		for (int i = 1; i < nb_bits; i++)
+		{
+
+			// Calculate difference
+			bootsXOR(&temp[0], &a[i], &b[i], bk);
+			bootsXOR(&result[i], &temp[0], &borrow[i - 1], bk);
+
+			// Calculate borrow
+			bootsNOT(&temp[1], &a[i], bk);
+			bootsAND(&temp[2], &temp[1], &b[i], bk);
+			bootsNOT(&temp[0], &temp[0], bk);
+			bootsAND(&temp[1], &borrow[i - 1], &temp[0], bk);
+			bootsOR(&borrow[i], &temp[2], &temp[1], bk);
+		}
+
+		delete_gate_bootstrapping_ciphertext_array(nb_bits, borrow);
+		delete_gate_bootstrapping_ciphertext_array(3, temp);
 	}
-	*/
+*/
 	void subtracter(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 	{
 
@@ -324,7 +324,7 @@ void comparator(LweSample *result, const LweSample *a, const LweSample *b, const
 		bootsXOR(&result[0], &a[0], &b[0], bk);
 		bootsNOT(&temp_0[0], &a[0], bk);
 		bootsAND(&borrow[0], &temp_0[0], &b[0], bk);
-
+		
 #pragma omp parallel for
 		for(int i = 1; i<nb_bits; i++){
 			bootsXOR(&temp_0[i], &a[i], &b[i], bk);
@@ -338,13 +338,13 @@ void comparator(LweSample *result, const LweSample *a, const LweSample *b, const
 
 			// Calculate difference
 			bootsXOR(&result[i], &temp_0[i], &borrow[i - 1], bk);
-
+			
 			if (i != nb_bits-1){
-				// Calculate borrow
-				bootsAND(&temp_2[i], &temp_1[i], &b[i], bk);
-				bootsNOT(&temp_0[i], &temp_0[i], bk);
-				bootsAND(&temp_1[i], &borrow[i - 1], &temp_0[i], bk);
-				bootsOR(&borrow[i], &temp_2[i], &temp_1[i], bk);
+			// Calculate borrow
+			bootsAND(&temp_2[i], &temp_1[i], &b[i], bk);
+			bootsNOT(&temp_0[i], &temp_0[i], bk);
+			bootsAND(&temp_1[i], &borrow[i - 1], &temp_0[i], bk);
+			bootsOR(&borrow[i], &temp_2[i], &temp_1[i], bk);
 			}
 		}
 
@@ -409,222 +409,7 @@ void comparator(LweSample *result, const LweSample *a, const LweSample *b, const
 		delete_gate_bootstrapping_ciphertext_array(nb_bits + 1, carry);
 		delete_gate_bootstrapping_ciphertext_array(1, temp);
 	}
-	void half_adder(LweSample &result, LweSample &carry, const LweSample &a, const LweSample &b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
-	{
 
-		bootsXOR(&result, &a, &b, bk);
-
-		bootsAND(&carry, &a, &b, bk);
-	}
-
-	void carry_save_adder(LweSample &result, LweSample &carry, const LweSample &a, const LweSample &b, LweSample &cin, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
-	{
-		LweSample *tmp = new_gate_bootstrapping_ciphertext(bk->params);
-		LweSample *t0 = new_gate_bootstrapping_ciphertext(bk->params);
-		LweSample *t1 = new_gate_bootstrapping_ciphertext(bk->params);
-		LweSample *t2 = new_gate_bootstrapping_ciphertext(bk->params);
-
-		bootsXOR(tmp, &a, &b, bk);
-		bootsXOR(&result, tmp, &cin, bk);
-
-		bootsAND(t0, &a, &b, bk);
-		bootsAND(t1, &cin, &b, bk);
-		bootsAND(t2, &a, &cin, bk);
-
-		bootsOR(tmp, t0, t1, bk);
-		bootsOR(&carry, tmp, t2, bk);
-
-	}
-	void dadda_8_multiplier(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk){
-		vector<LweSample *> gen_pp;
-		int i, j;
-		for(i=0; i <nb_bits; i++){
-			LweSample *tmp = new_gate_bootstrapping_ciphertext_array(nb_bits, bk->params);
-# pragma omp parallel for shared(gen_pp)
-			for(j=0; j <nb_bits; j++){
-				bootsAND(&tmp[j], &a[j], &b[i], bk);
-			}
-			gen_pp.push_back(tmp);
-		}
-
-		LweSample *s1 = new_gate_bootstrapping_ciphertext_array(6, bk->params);
-		LweSample *c1 = new_gate_bootstrapping_ciphertext_array(6, bk->params);
-
-#pragma omp parallel sections
-		{
-#pragma omp section
-			{
-				half_adder(s1[0], c1[0], gen_pp[6][0], gen_pp[5][1], nb_bits, bk);
-				half_adder(s1[2], c1[2], gen_pp[4][3], gen_pp[3][4], nb_bits, bk);
-				half_adder(s1[4], c1[4], gen_pp[4][4], gen_pp[3][5], nb_bits, bk);
-			}
-#pragma omp section 
-			{
-#pragma omp parallel for
-				for(int i=1; i < 6; i+=2){
-					carry_save_adder(s1[i], c1[i], gen_pp[7][i-1], gen_pp[6][i], gen_pp[5][i+1], nb_bits, bk);
-
-				}
-			}
-		}
-
-		LweSample *s2 = new_gate_bootstrapping_ciphertext_array(14, bk->params);
-		LweSample *c2 = new_gate_bootstrapping_ciphertext_array(14, bk->params);
-
-#pragma omp parallel for private(i) shared (s2, c2)
-		for (i=0; i<14; i++)
-		{
-			if (i==0){
-				half_adder(s2[0], c2[0], gen_pp[4][0], gen_pp[3][1], nb_bits, bk);
-			}
-			else if (i==2){
-				half_adder(s2[2], c2[2], gen_pp[2][3], gen_pp[1][4], nb_bits, bk);
-			}
-			else if (i==1){
-				carry_save_adder(s2[1], c2[1], gen_pp[5][0], gen_pp[4][1], gen_pp[3][2], nb_bits, bk);
-			} 
-			else if (i==3){
-				carry_save_adder(s2[3], c2[3], s1[0], gen_pp[4][2], gen_pp[3][3], nb_bits, bk);
-
-			}
-			else if (i==4){
-				carry_save_adder(s2[4], c2[4], gen_pp[2][4], gen_pp[1][5], gen_pp[0][6], nb_bits, bk);
-			}
-			else if (i==5)
-			{
-				carry_save_adder(s2[5], c2[5], s1[1], s1[2], c1[0], nb_bits, bk);
-			}
-			else if (i==6)
-			{
-				carry_save_adder(s2[6], c2[6], gen_pp[2][5], gen_pp[1][6], gen_pp[0][7], nb_bits, bk);
-			}
-			else if (i==7)
-			{		
-				carry_save_adder(s2[7], c2[7], s1[3], s1[4], c1[1], nb_bits, bk);
-			}
-			else if (i==8)
-			{
-				carry_save_adder(s2[8], c2[8], c1[2], gen_pp[2][6], gen_pp[1][7], nb_bits, bk);
-			}
-			else if (i==9)
-			{
-				carry_save_adder(s2[9], c2[9], s1[5], c1[3], c1[4], nb_bits, bk);
-			}
-			else if (i==10)
-			{
-				carry_save_adder(s2[10], c2[10], gen_pp[4][5], gen_pp[3][6], gen_pp[2][7], nb_bits, bk);
-			} 
-			else if (i==11)
-			{
-				carry_save_adder(s2[11], c2[11], gen_pp[7][3], c1[5], gen_pp[6][4], nb_bits, bk);
-			}
-			else if (i==12)
-			{
-				carry_save_adder(s2[12], c2[12], gen_pp[5][5], gen_pp[4][6], gen_pp[3][7], nb_bits, bk);
-			}
-			else 
-			{
-				carry_save_adder(s2[13], c2[13], gen_pp[7][4], gen_pp[6][5], gen_pp[5][6], nb_bits, bk);
-			}
-		}
-
-		LweSample *s3 = new_gate_bootstrapping_ciphertext_array(10, bk->params);
-		LweSample *c3 = new_gate_bootstrapping_ciphertext_array(10, bk->params);
-#pragma omp parallel for private(i) shared (s3, c3)
-		for (i =0; i < 10; i++)
-		{ 		
-			if ( i== 0) {half_adder(s3[0], c3[0], gen_pp[3][0], gen_pp[2][1], nb_bits, bk);
-			}
-			else if ( i== 1) {
-				carry_save_adder(s3[1], c3[1], s2[0], gen_pp[2][2], gen_pp[1][3], nb_bits, bk);
-			}
-			else if ( i== 2) {
-				carry_save_adder(s3[2], c3[2], s2[1], s2[2], c2[0], nb_bits, bk);
-			}
-			else if ( i== 3) {
-				carry_save_adder(s3[3], c3[3], c2[1], c2[2], s2[3], nb_bits, bk);
-			}
-			else if ( i== 4) {
-				carry_save_adder(s3[4], c3[4], c2[3], c2[4], s2[5], nb_bits, bk);
-			}
-			else if ( i== 5) {
-				carry_save_adder(s3[5], c3[5], c2[5], c2[6], s2[7], nb_bits, bk);
-			}
-			else if ( i== 6) {
-				carry_save_adder(s3[6], c3[6], c2[7], c2[8], s2[9], nb_bits, bk);
-			}
-			else if ( i== 7) {
-				carry_save_adder(s3[7], c3[7], c2[9], c2[10], s2[11], nb_bits, bk);
-			}
-			else if ( i== 8) {
-				carry_save_adder(s3[8], c3[8], c2[11], c2[12], s2[13], nb_bits, bk);
-			}
-			else if ( i== 9) {
-				carry_save_adder(s3[9], c3[9], gen_pp[7][5], gen_pp[6][6], gen_pp[5][7], nb_bits, bk);
-			}
-		}
-
-
-		LweSample *s4 = new_gate_bootstrapping_ciphertext_array(12, bk->params);
-		LweSample *c4 = new_gate_bootstrapping_ciphertext_array(12, bk->params);
-#pragma omp parallel for private(i) shared (s4, c4)
-		for(i=0; i < 12; i++)
-		{
-			
-		if (i== 0) {half_adder(s4[0], c4[0], gen_pp[2][0], gen_pp[1][1], nb_bits, bk);}
-		else if (i== 1) {carry_save_adder(s4[1], c4[1], s3[0], gen_pp[1][2], gen_pp[0][3], nb_bits, bk);}
-		else if (i== 2) {carry_save_adder(s4[2], c4[2], c3[0], s3[1], gen_pp[0][4], nb_bits, bk);}
-		else if (i== 3) {carry_save_adder(s4[3], c4[3], c3[1], s3[2], gen_pp[0][5], nb_bits, bk);}
-		else if (i== 4) {carry_save_adder(s4[4], c4[4], c3[2], s3[3], s2[4], nb_bits, bk);}
-		else if (i== 5) {carry_save_adder(s4[5], c4[5], c3[3], s3[4], s2[6], nb_bits, bk);}
-		else if (i== 6) {carry_save_adder(s4[6], c4[6], c3[4], s3[5], s2[8], nb_bits, bk);}
-		else if (i== 7) {carry_save_adder(s4[7], c4[7], c3[5], s3[6], s2[10], nb_bits, bk);}
-		else if (i== 8) {carry_save_adder(s4[8], c4[8], c3[6], s3[7], s2[12], nb_bits, bk);}
-		else if (i== 9) {carry_save_adder(s4[9], c4[9], c3[7], s3[8], gen_pp[4][7], nb_bits, bk);}
-		else if (i== 10) {carry_save_adder(s4[10], c4[10], c3[8], s3[9], c2[13], nb_bits, bk);}
-		else if (i== 11) {carry_save_adder(s4[11], c4[11], c3[9], gen_pp[7][6], gen_pp[6][7], nb_bits, bk);}
-		}
-
-		LweSample *y = new_gate_bootstrapping_ciphertext_array(16, bk->params);
-		LweSample *c5 = new_gate_bootstrapping_ciphertext_array(14, bk->params);
-		
-//#pragma omp parallel for
-		for (i=0; i< 14; i++)
-		{
-			if (i== 0){half_adder(y[1], c5[0], gen_pp[1][0], gen_pp[0][1], nb_bits, bk);}
-			else if (i== 1){carry_save_adder(y[2], c5[1], s4[0], gen_pp[0][2], c5[0], nb_bits, bk);}
-			else if (i== 2){carry_save_adder(y[3], c5[2], c4[0], s4[1], c5[1], nb_bits, bk);}
-			else if (i== 3){carry_save_adder(y[4], c5[3], c4[1], s4[2], c5[2], nb_bits, bk);}
-			else if (i== 4){carry_save_adder(y[5], c5[4], c4[2], s4[3], c5[3], nb_bits, bk);}
-			else if (i== 5){carry_save_adder(y[6], c5[5], c4[3], s4[4], c5[4], nb_bits, bk);}
-			else if (i== 6){carry_save_adder(y[7], c5[6], c4[4], s4[5], c5[5], nb_bits, bk);}
-			else if (i== 7){carry_save_adder(y[8], c5[7], c4[5], s4[6], c5[6], nb_bits, bk);}
-			else if (i== 8){carry_save_adder(y[9], c5[8], c4[6], s4[7], c5[7], nb_bits, bk);}
-			else if (i== 9){carry_save_adder(y[10], c5[9], c4[7], s4[8], c5[8] , nb_bits, bk);}
-			else if (i== 10){carry_save_adder(y[11], c5[10],c4[8], s4[9], c5[9], nb_bits, bk);}
-			else if (i== 11){carry_save_adder(y[12], c5[11],c4[9], s4[10], c5[10], nb_bits, bk);}
-			else if (i== 12){carry_save_adder(y[13], c5[12],c4[10], s4[11], c5[11], nb_bits, bk);}
-			else if (i== 13){carry_save_adder(y[14], c5[13],c4[11], gen_pp[7][7], c5[12], nb_bits, bk);}
-		}
-		bootsCOPY(&y[0], &gen_pp[0][0], bk);
-		bootsCOPY(&y[15], &c5[13], bk);	
-
-		for(int i=0; i<nb_bits;i++){
-			bootsCOPY(&result[i], &y[i], bk);
-		}
-		delete_gate_bootstrapping_ciphertext_array(6, s1);
-		delete_gate_bootstrapping_ciphertext_array(6, c1);
-		delete_gate_bootstrapping_ciphertext_array(14, s2);
-		delete_gate_bootstrapping_ciphertext_array(14, c2);
-		delete_gate_bootstrapping_ciphertext_array(10, s3);
-		delete_gate_bootstrapping_ciphertext_array(10, c3);
-		delete_gate_bootstrapping_ciphertext_array(12, s4);
-		delete_gate_bootstrapping_ciphertext_array(12, c4);
-		delete_gate_bootstrapping_ciphertext_array(16, y);
-		delete_gate_bootstrapping_ciphertext_array(14, c5);
-
-
-	}
 	// 8
 	void add_supplement(LweSample *result, const LweSample *a, const LweSample *b, const int nb_bits, const TFheGateBootstrappingCloudKeySet *bk)
 	{
